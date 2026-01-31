@@ -5,7 +5,7 @@ use std::error::Error;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     enable_tcpip_for_all_usb_devices().await?;
-    connect_to_remote_device().await?;
+    demonstrate_atv_controller().await?;
     Ok(())
 }
 
@@ -48,15 +48,16 @@ async fn enable_tcpip_for_all_usb_devices() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn connect_to_remote_device() -> Result<(), Box<dyn Error>> {
+async fn demonstrate_atv_controller() -> Result<(), Box<dyn Error>> {
     println!("\nConnecting to remote device at 100.108.112.14:5555...");
     let remote_ip = Ipv4Addr::new(100, 108, 112, 14);
     let remote_port = 5555;
     
-    let mut remote_device = RemoteDevice::new(remote_ip, remote_port)?;
+    let remote_device = RemoteDevice::new(remote_ip, remote_port)?;
+    println!("Connected successfully!");
     
-    println!("Connected successfully! Retrieving device information...");
-    let device_info = remote_device.get_device_info()?;
+    let mut device_for_info = remote_device;
+    let device_info = device_for_info.get_device_info()?;
     
     println!("Device Information:");
     println!("  Serial: {}", device_info.serial);
@@ -66,8 +67,35 @@ async fn connect_to_remote_device() -> Result<(), Box<dyn Error>> {
     println!("  Build ID: {}", device_info.build_id);
     println!("  Product Name: {}", device_info.product_name);
     
-    let device_ip = remote_device.get_device_ip()?;
+    let device_ip = device_for_info.get_device_ip()?;
     println!("  Device IP: {}", device_ip);
+    
+    println!("\nDemonstrating ATV Controller functionality...");
+    let mut controller = device_for_info.into_controller();
+    
+    println!("Sending HOME key event...");
+    controller.home()?;
+    
+    println!("Sending BACK key event...");
+    controller.back()?;
+    
+    println!("Sending VOLUME UP key event...");
+    controller.volume_up()?;
+    
+    println!("Sending VOLUME DOWN key event...");
+    controller.volume_down()?;
+    
+    println!("Sending DPAD navigation sequence...");
+    controller.dpad_up()?;
+    controller.dpad_down()?;
+    controller.dpad_left()?;
+    controller.dpad_right()?;
+    controller.dpad_center()?;
+    
+    println!("Sending text input: 'Hello ATV!'...");
+    controller.input_text("Hello ATV!")?;
+    
+    println!("ATV Controller demonstration completed!");
     
     Ok(())
 }

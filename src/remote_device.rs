@@ -1,3 +1,4 @@
+use crate::atv_controller::ATVController;
 use adb_client::{tcp::ADBTcpDevice, ADBDeviceExt};
 use std::error::Error;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -109,5 +110,9 @@ impl RemoteDevice {
 
     pub fn address(&self) -> SocketAddr {
         self.address
+    }
+
+    pub fn into_controller(self) -> ATVController {
+        ATVController::new(self.device)
     }
 }
