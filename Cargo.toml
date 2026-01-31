@@ -1,0 +1,10 @@
+[package]
+name = "atvmate"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+adb_client = { version = "3.0.1", features = [
+    "usb",
+] }
+tokio = { version = "1", features = ["full"] }
