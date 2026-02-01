@@ -1,4 +1,4 @@
-use poem::{listener::TcpListener, Route, Server};
+use poem::{listener::TcpListener, Route, Server, endpoint::StaticFilesEndpoint};
 use poem_openapi::OpenApiService;
 use std::sync::Arc;
 use atvmate::{global_device_manager::GlobalDeviceManager, web_service::ApiService};
@@ -14,7 +14,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .server("http://127.0.0.1:8000");
 
     let ui = api_service.swagger_ui();
-    let app = Route::new().nest("/", api_service).nest("/docs", ui);
+    let spec = api_service.spec_endpoint();
+    let app = Route::new()
+        .nest("/api", api_service)
+        .nest("/docs", ui)
+        .at("/api-docs/openapi.json", spec)
+        .nest("/", StaticFilesEndpoint::new("frontend/dist").index_file("index.html"));
 
     println!("Server running at http://127.0.0.1:8000");
     println!("API documentation available at http://127.0.0.1:8000/docs");
