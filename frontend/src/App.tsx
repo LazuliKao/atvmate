@@ -1,12 +1,17 @@
-// import { h, Fragment } from 'preact';
 import { useState, useCallback, useEffect } from 'preact/hooks';
 import { DeviceManager } from './components/DeviceManager';
-import { Joystick } from './components/Joystick';
 import { DPad } from './components/DPad';
 import { MediaControls } from './components/MediaControls';
 import { usePostDevicesIpKeyKeyName } from './api/default/default';
+import { type Theme, webLightTheme, webDarkTheme, Button } from '@fluentui/react-components';
+import { WeatherMoon24Regular, WeatherSunny24Regular, ArrowLeft24Regular, Home24Regular, Navigation24Regular } from '@fluentui/react-icons';
 
-export function App() {
+interface AppProps {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+}
+
+export function App({ theme, setTheme }: AppProps) {
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
 
   const sendKeyMutation = usePostDevicesIpKeyKeyName();
@@ -24,17 +29,6 @@ export function App() {
     document.body.addEventListener('touchmove', preventDefault, { passive: false });
     return () => document.body.removeEventListener('touchmove', preventDefault);
   }, []);
-
-  const handleJoystickMove = useCallback((pos: { x: number; y: number }) => {
-    if (!selectedDevice) return;
-    
-    const threshold = 0.5;
-    
-    if (pos.y < -threshold) sendKey('dpad_up');
-    if (pos.y > threshold) sendKey('dpad_down');
-    if (pos.x < -threshold) sendKey('dpad_left');
-    if (pos.x > threshold) sendKey('dpad_right');
-  }, [selectedDevice, sendKey]);
 
   const handleDPadDirection = useCallback((direction: 'up' | 'down' | 'left' | 'right' | 'center') => {
     const keyMap = {
@@ -59,8 +53,20 @@ export function App() {
     sendKey(keyMap[action]);
   }, [sendKey]);
 
-return (
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === webDarkTheme ? webLightTheme : webDarkTheme);
+  }, [theme, setTheme]);
+
+  return (
     <div className="h-screen w-screen bg-black text-gray-200 font-sans selection:bg-blue-500/30 overflow-hidden touch-none flex flex-col m-0 p-0">
+      <div className="absolute top-4 right-4 z-50">
+        <Button
+          appearance="subtle"
+          icon={theme === webDarkTheme ? <WeatherSunny24Regular /> : <WeatherMoon24Regular />}
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+        />
+      </div>
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-gray-900/0 to-black pointer-events-none" />
       
       <main className="flex-1 flex flex-col items-center w-full relative z-10 gap-6 h-full overflow-y-auto">
@@ -77,44 +83,41 @@ return (
             </div>
 
             <div className="w-full flex flex-col items-center gap-6 md:gap-8">
-              <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 w-full max-w-4xl mx-auto px-4">
-                <div className="flex flex-col items-center gap-2 flex-1">
-                  <Joystick onMove={handleJoystickMove} onStop={() => {}} size={Math.min(window.innerWidth * 0.4, 200)} />
-                  <span className="text-xs uppercase tracking-widest text-gray-600 font-bold">Analog</span>
-                </div>
-
-                <div className="flex flex-col items-center gap-2 flex-1">
-                  <DPad onDirection={handleDPadDirection} />
-                  <span className="text-xs uppercase tracking-widest text-gray-600 font-bold">Navigation</span>
-                </div>
+              <div className="flex flex-col items-center gap-2 flex-1">
+                <DPad onDirection={handleDPadDirection} />
+                <span className="text-xs uppercase tracking-widest text-gray-600 font-bold">Navigation</span>
               </div>
+            </div>
 
               <div className="w-full max-w-sm md:max-w-lg mx-auto">
                 <MediaControls onAction={handleMediaAction} />
               </div>
 
               <div className="grid grid-cols-3 gap-3 md:gap-4 w-full max-w-sm md:max-w-lg mx-auto px-2">
-                <button 
+                <Button
+                  appearance="secondary"
+                  icon={<ArrowLeft24Regular />}
                   onClick={() => sendKey('back')}
                   className="flex flex-col items-center justify-center p-2 md:p-3 rounded-xl bg-gray-800/50 border border-gray-700 hover:bg-gray-700 active:bg-gray-600 transition-all text-gray-400 hover:text-white"
                 >
-                  <span className="text-lg md:text-xl mb-1">↩</span>
                   <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider">Back</span>
-                </button>
-                <button 
+                </Button>
+                <Button
+                  appearance="secondary"
+                  icon={<Home24Regular />}
                   onClick={() => sendKey('home')}
                   className="flex flex-col items-center justify-center p-2 md:p-3 rounded-xl bg-gray-800/50 border border-gray-700 hover:bg-gray-700 active:bg-gray-600 transition-all text-gray-400 hover:text-white"
                 >
-                  <span className="text-lg md:text-xl mb-1">🏠</span>
                   <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider">Home</span>
-                </button>
-                <button 
+                </Button>
+                <Button
+                  appearance="secondary"
+                  icon={<Navigation24Regular />}
                   onClick={() => sendKey('menu')}
                   className="flex flex-col items-center justify-center p-2 md:p-3 rounded-xl bg-gray-800/50 border border-gray-700 hover:bg-gray-700 active:bg-gray-600 transition-all text-gray-400 hover:text-white"
                 >
-                  <span className="text-lg md:text-xl mb-1">☰</span>
                   <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider">Menu</span>
-                </button>
+                </Button>
               </div>
 
             </div>

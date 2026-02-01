@@ -1,4 +1,5 @@
-// import { h, Fragment } from 'preact';
+import { Button, Input } from '@fluentui/react-components';
+import { AddRegular, DeleteRegular, ArrowClockwiseRegular } from '@fluentui/react-icons';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
 import {
@@ -69,10 +70,10 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
       <form onSubmit={handleAddDevice} className="mb-8 space-y-4 bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
         <div>
           <label className="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">IP Address</label>
-          <input
+          <Input
             type="text"
             value={ip}
-            onInput={(e) => setIp(e.currentTarget.value)}
+            onChange={(_e, data) => setIp(data.value)}
             placeholder="192.168.1.10"
             className="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none min-h-[44px] transition-all placeholder-gray-600 font-mono text-sm"
             required
@@ -80,16 +81,16 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
         </div>
         <div>
           <label className="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Port</label>
-          <input
+          <Input
             type="number"
             value={port}
-            onInput={(e) => setPort(e.currentTarget.value)}
+            onChange={(_e, data) => setPort(data.value)}
             placeholder="5555"
             className="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none min-h-[44px] transition-all placeholder-gray-600 font-mono text-sm"
             required
           />
         </div>
-        <button
+        <Button
           type="submit"
           disabled={addDeviceMutation.isPending}
           className={`w-full p-3 rounded-lg font-bold text-white min-h-[44px] flex items-center justify-center transition-all mt-2 ${
@@ -97,6 +98,7 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
               ? 'bg-blue-900/50 cursor-not-allowed text-blue-300'
               : 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-lg hover:shadow-blue-500/25'
           }`}
+          icon={!addDeviceMutation.isPending ? <AddRegular /> : undefined}
         >
           {addDeviceMutation.isPending ? (
             <span className="flex items-center gap-2">
@@ -104,7 +106,7 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
               Adding...
             </span>
           ) : 'Add Device'}
-        </button>
+        </Button>
         {addDeviceMutation.isError && (
           <p className="text-red-400 text-xs text-center mt-2 bg-red-900/10 py-1 rounded">
             Failed to add device. Check connection.
@@ -125,12 +127,13 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
         {isError && (
           <div className="bg-red-900/20 border border-red-800/50 text-red-300 p-4 rounded-lg text-center">
             <p className="mb-3 text-sm">Unable to load devices</p>
-            <button
+            <Button
               onClick={() => refetch()}
               className="px-4 py-2 bg-red-800 hover:bg-red-700 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors"
+              icon={<ArrowClockwiseRegular />}
             >
               Retry Connection
-            </button>
+            </Button>
           </div>
         )}
 
@@ -147,23 +150,21 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
                   key={deviceIp}
                   className="group flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-lg transition-all"
                 >
-                  <button
+                  <Button
                     onClick={() => onSelectDevice(deviceIp)}
+                    appearance="transparent"
                     className="flex-1 text-left font-mono text-blue-300 hover:text-blue-100 truncate mr-3 min-h-[44px] flex items-center outline-none group-hover:translate-x-1 transition-transform"
                   >
                     <span className="w-2 h-2 rounded-full bg-green-500 mr-3 shadow-[0_0_8px_rgba(34,197,94,0.4)]"></span>
                     {deviceIp}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={(e) => handleRemoveDevice(deviceIp, e)}
                     disabled={removeDeviceMutation.isPending}
                     className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-colors outline-none focus:ring-1 focus:ring-red-500/50"
                     aria-label={`Remove ${deviceIp}`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
+                    icon={<DeleteRegular />}
+                  />
                 </div>
               ))
             )}

@@ -16,6 +16,8 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
+    "@fluentui/react-components": "^9.72.11",
+    "@fluentui/react-icons": "^2.0.316",
     "@preact/preset-vite": "^2.10.3",
     "@tanstack/react-query": "^5.90.20",
     "axios": "^1.13.4",
