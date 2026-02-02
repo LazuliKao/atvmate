@@ -1,4 +1,4 @@
-import { Button, Input } from '@fluentui/react-components';
+import { Button, Input, tokens } from '@fluentui/react-components';
 import { AddRegular, DeleteRegular, ArrowClockwiseRegular } from '@fluentui/react-icons';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
@@ -54,7 +54,7 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
     }
   };
 
-  const handleRemoveDevice = (deviceIp: string, e: Event) => {
+  const handleRemoveDevice = (deviceIp: string, e: any) => {
     e.stopPropagation();
     if (confirm(`Remove device ${deviceIp}?`)) {
       removeDeviceMutation.mutate({ ip: deviceIp });
@@ -64,40 +64,51 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
   const devices = (devicesResponse?.data as unknown as DeviceList)?.devices || [];
 
   return (
-    <div className="p-4 bg-gray-900 text-white rounded-xl w-full max-w-md mx-auto shadow-xl border border-gray-800">
+    <div
+      className="p-4 rounded-xl w-full max-w-md mx-auto shadow-xl border"
+      style={{
+        backgroundColor: tokens.colorNeutralBackground2,
+        color: tokens.colorNeutralForeground1,
+        borderColor: tokens.colorNeutralStroke1,
+      }}
+    >
       <h2 className="text-xl font-bold mb-6 text-center text-blue-400 tracking-tight">Device Manager</h2>
 
-      <form onSubmit={handleAddDevice} className="mb-8 space-y-4 bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
+      <form
+        onSubmit={handleAddDevice}
+        className="mb-8 space-y-4 p-4 rounded-lg border"
+        style={{
+          backgroundColor: tokens.colorNeutralBackground1,
+          borderColor: tokens.colorNeutralStroke2,
+        }}
+      >
         <div>
-          <label className="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">IP Address</label>
+          <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: tokens.colorNeutralForeground2 }}>IP Address</label>
           <Input
             type="text"
             value={ip}
             onChange={(_e, data) => setIp(data.value)}
             placeholder="192.168.1.10"
-            className="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none min-h-[44px] transition-all placeholder-gray-600 font-mono text-sm"
+            className="w-full p-3 rounded-lg outline-none min-h-[44px] transition-all font-mono text-sm"
             required
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Port</label>
+          <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: tokens.colorNeutralForeground2 }}>Port</label>
           <Input
             type="number"
             value={port}
             onChange={(_e, data) => setPort(data.value)}
             placeholder="5555"
-            className="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none min-h-[44px] transition-all placeholder-gray-600 font-mono text-sm"
+            className="w-full p-3 rounded-lg outline-none min-h-[44px] transition-all font-mono text-sm"
             required
           />
         </div>
         <Button
           type="submit"
           disabled={addDeviceMutation.isPending}
-          className={`w-full p-3 rounded-lg font-bold text-white min-h-[44px] flex items-center justify-center transition-all mt-2 ${
-            addDeviceMutation.isPending
-              ? 'bg-blue-900/50 cursor-not-allowed text-blue-300'
-              : 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-lg hover:shadow-blue-500/25'
-          }`}
+          appearance="primary"
+          className="w-full min-h-[44px] mt-2"
           icon={!addDeviceMutation.isPending ? <AddRegular /> : undefined}
         >
           {addDeviceMutation.isPending ? (
@@ -115,7 +126,7 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
       </form>
 
       <div className="space-y-3">
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-1">Saved Devices</h3>
+        <h3 className="text-xs font-bold uppercase tracking-wider mb-2 px-1" style={{ color: tokens.colorNeutralForeground2 }}>Saved Devices</h3>
 
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-8 text-gray-500 space-y-2">
@@ -140,20 +151,25 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
         {!isLoading && !isError && (
           <div className="space-y-2">
             {devices.length === 0 ? (
-              <div className="text-center py-8 bg-gray-800/30 rounded-lg border border-gray-800 border-dashed">
-                <p className="text-gray-500 text-sm">No devices found.</p>
-                <p className="text-gray-600 text-xs mt-1">Add a device above to get started.</p>
+              <div className="text-center py-8 rounded-lg border border-dashed" style={{ backgroundColor: tokens.colorNeutralBackgroundAlpha, borderColor: tokens.colorNeutralStroke2 }}>
+                <p className="text-sm" style={{ color: tokens.colorNeutralForeground2 }}>No devices found.</p>
+                <p className="text-xs mt-1" style={{ color: tokens.colorNeutralForeground3 }}>Add a device above to get started.</p>
               </div>
             ) : (
               devices.map((deviceIp) => (
                 <div
                   key={deviceIp}
-                  className="group flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 rounded-lg transition-all"
+                  className="group flex items-center justify-between p-3 rounded-lg transition-all border"
+                  style={{
+                    backgroundColor: tokens.colorNeutralBackground1,
+                    borderColor: tokens.colorNeutralStroke1,
+                  }}
                 >
                   <Button
                     onClick={() => onSelectDevice(deviceIp)}
                     appearance="transparent"
-                    className="flex-1 text-left font-mono text-blue-300 hover:text-blue-100 truncate mr-3 min-h-[44px] flex items-center outline-none group-hover:translate-x-1 transition-transform"
+                    className="flex-1 text-left font-mono truncate mr-3 min-h-[44px] flex items-center outline-none group-hover:translate-x-1 transition-transform"
+                    style={{ color: tokens.colorBrandForeground1 }}
                   >
                     <span className="w-2 h-2 rounded-full bg-green-500 mr-3 shadow-[0_0_8px_rgba(34,197,94,0.4)]"></span>
                     {deviceIp}
@@ -161,7 +177,8 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
                   <Button
                     onClick={(e) => handleRemoveDevice(deviceIp, e)}
                     disabled={removeDeviceMutation.isPending}
-                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-colors outline-none focus:ring-1 focus:ring-red-500/50"
+                    className="w-10 h-10 flex items-center justify-center rounded-lg transition-colors outline-none focus:ring-1 focus:ring-red-500/50"
+                    style={{ color: tokens.colorNeutralForeground3 }}
                     aria-label={`Remove ${deviceIp}`}
                     icon={<DeleteRegular />}
                   />

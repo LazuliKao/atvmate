@@ -2,7 +2,7 @@ import './style.css'
 import { render } from 'preact'
 import { App } from './App'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { FluentProvider, webLightTheme, webDarkTheme, type Theme } from '@fluentui/react-components'
+import { FluentProvider, webDarkTheme, type Theme } from '@fluentui/react-components'
 import { useState } from 'preact/hooks'
 
 const queryClient = new QueryClient()
@@ -13,7 +13,7 @@ function Main() {
   return (
     <FluentProvider theme={theme}>
       <QueryClientProvider client={queryClient}>
-        <App theme={theme} setTheme={setTheme} />
+        {<App theme={theme} setTheme={setTheme} /> as any}
       </QueryClientProvider>
     </FluentProvider>
   )

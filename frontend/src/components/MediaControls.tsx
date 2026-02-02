@@ -17,7 +17,7 @@ interface MediaControlsProps {
 }
 
 export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onAction, isPlaying = false }) => {
-  const handleInteraction = useCallback((e: Event, action: 'play_pause' | 'stop' | 'next' | 'previous' | 'volume_up' | 'volume_down') => {
+  const handleInteraction = useCallback((e: any, action: 'play_pause' | 'stop' | 'next' | 'previous' | 'volume_up' | 'volume_down') => {
     e.preventDefault();
     onAction(action);
   }, [onAction]);
