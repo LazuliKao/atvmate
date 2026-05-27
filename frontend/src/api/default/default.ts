@@ -30,74 +30,40 @@ import type {
   AxiosResponse
 } from 'axios';
 
-import type { AddDeviceRequest, TextInputRequest } from '../model';
+import type { AddDeviceRequest, AddServerDeviceRequest, AddUsbDeviceRequest, TextInputRequest } from '../model';
 
 
 
 
-
-
+// GET /devices
 export const getDevices = (
      options?: AxiosRequestConfig
  ): Promise<AxiosResponse<unknown>> => {
-    
-    
     return axios.default.get(
-      `http://127.0.0.1:8000/devices`,{
-    ...options,}
+      `http://127.0.0.1:8000/devices`,{ ...options }
     );
   }
 
-
-
-
 export const getGetDevicesQueryKey = () => {
-    return [
-    `http://127.0.0.1:8000/devices`
-    ] as const;
-    }
+    return [`http://127.0.0.1:8000/devices`] as const;
+}
 
-    
-export const getGetDevicesQueryOptions = <TData = Awaited<ReturnType<typeof getDevices>>, TError = AxiosError<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>>, axios?: AxiosRequestConfig}
-) => {
-
+export const getGetDevicesQueryOptions = <TData = Awaited<ReturnType<typeof getDevices>>, TError = AxiosError<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>>, axios?: AxiosRequestConfig}) => {
 const {query: queryOptions, axios: axiosOptions} = options ?? {};
-
   const queryKey =  queryOptions?.queryKey ?? getGetDevicesQueryKey();
-
-  
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getDevices>>> = ({ signal }) => getDevices({ signal, ...axiosOptions });
-
-      
-
-      
-
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetDevicesQueryResult = NonNullable<Awaited<ReturnType<typeof getDevices>>>
 export type GetDevicesQueryError = AxiosError<unknown>
 
-
 export function useGetDevices<TData = Awaited<ReturnType<typeof getDevices>>, TError = AxiosError<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDevices>>,
-          TError,
-          Awaited<ReturnType<typeof getDevices>>
-        > , 'initialData'
-      >, axios?: AxiosRequestConfig}
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof getDevices>>, TError, Awaited<ReturnType<typeof getDevices>>> , 'initialData'>, axios?: AxiosRequestConfig}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetDevices<TData = Awaited<ReturnType<typeof getDevices>>, TError = AxiosError<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDevices>>,
-          TError,
-          Awaited<ReturnType<typeof getDevices>>
-        > , 'initialData'
-      >, axios?: AxiosRequestConfig}
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof getDevices>>, TError, Awaited<ReturnType<typeof getDevices>>> , 'initialData'>, axios?: AxiosRequestConfig}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetDevices<TData = Awaited<ReturnType<typeof getDevices>>, TError = AxiosError<unknown>>(
@@ -109,62 +75,84 @@ export function useGetDevices<TData = Awaited<ReturnType<typeof getDevices>>, TE
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDevices>>, TError, TData>>, axios?: AxiosRequestConfig}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
   const queryOptions = getGetDevicesQueryOptions(options)
-
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
 
-
-
-export const postDevices = (
-    postDevicesBody: AddDeviceRequest, options?: AxiosRequestConfig
+// GET /devices/discover
+export const discoverDevices = (
+     options?: AxiosRequestConfig
  ): Promise<AxiosResponse<unknown>> => {
-    
-    
-    return axios.default.post(
-      `http://127.0.0.1:8000/devices`,
-      postDevicesBody,{
-    ...options,}
+    return axios.default.get(
+      `http://127.0.0.1:8000/devices/discover`,{ ...options }
     );
   }
 
+export const getDiscoverDevicesQueryKey = () => {
+    return [`http://127.0.0.1:8000/devices/discover`] as const;
+}
 
+export const getDiscoverDevicesQueryOptions = <TData = Awaited<ReturnType<typeof discoverDevices>>, TError = AxiosError<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverDevices>>, TError, TData>>, axios?: AxiosRequestConfig}) => {
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+  const queryKey =  queryOptions?.queryKey ?? getDiscoverDevicesQueryKey();
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof discoverDevices>>> = ({ signal }) => discoverDevices({ signal, ...axiosOptions });
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof discoverDevices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DiscoverDevicesQueryResult = NonNullable<Awaited<ReturnType<typeof discoverDevices>>>
+export type DiscoverDevicesQueryError = AxiosError<unknown>
+
+export function useDiscoverDevices<TData = Awaited<ReturnType<typeof discoverDevices>>, TError = AxiosError<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverDevices>>, TError, TData>> & Pick<DefinedInitialDataOptions<Awaited<ReturnType<typeof discoverDevices>>, TError, Awaited<ReturnType<typeof discoverDevices>>> , 'initialData'>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDiscoverDevices<TData = Awaited<ReturnType<typeof discoverDevices>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverDevices>>, TError, TData>> & Pick<UndefinedInitialDataOptions<Awaited<ReturnType<typeof discoverDevices>>, TError, Awaited<ReturnType<typeof discoverDevices>>> , 'initialData'>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDiscoverDevices<TData = Awaited<ReturnType<typeof discoverDevices>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverDevices>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useDiscoverDevices<TData = Awaited<ReturnType<typeof discoverDevices>>, TError = AxiosError<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverDevices>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getDiscoverDevicesQueryOptions(options)
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+// POST /devices
+export const postDevices = (
+    postDevicesBody: AddDeviceRequest, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<unknown>> => {
+    return axios.default.post(
+      `http://127.0.0.1:8000/devices`, postDevicesBody, { ...options }
+    );
+  }
 
 export const getPostDevicesMutationOptions = <TError = AxiosError<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevices>>, TError,{data: AddDeviceRequest}, TContext>, axios?: AxiosRequestConfig}
 ): UseMutationOptions<Awaited<ReturnType<typeof postDevices>>, TError,{data: AddDeviceRequest}, TContext> => {
-
 const mutationKey = ['postDevices'];
 const {mutation: mutationOptions, axios: axiosOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, axios: undefined};
-
-      
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDevices>>, {data: AddDeviceRequest}> = (props) => {
           const {data} = props ?? {};
-
           return  postDevices(data,axiosOptions)
         }
-
-
-
-        
-
-
   return  { mutationFn, ...mutationOptions }}
-
     export type PostDevicesMutationResult = NonNullable<Awaited<ReturnType<typeof postDevices>>>
     export type PostDevicesMutationBody = AddDeviceRequest
     export type PostDevicesMutationError = AxiosError<unknown>
-
     export const usePostDevices = <TError = AxiosError<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevices>>, TError,{data: AddDeviceRequest}, TContext>, axios?: AxiosRequestConfig}
  , queryClient?: QueryClient): UseMutationResult<
@@ -175,169 +163,188 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
       > => {
       return useMutation(getPostDevicesMutationOptions(options), queryClient);
     }
-    export const deleteDevicesIp = (
-    ip: string, options?: AxiosRequestConfig
+
+// POST /devices/usb
+export const postDevicesUsb = (
+    postDevicesUsbBody: AddUsbDeviceRequest, options?: AxiosRequestConfig
  ): Promise<AxiosResponse<unknown>> => {
-    
-    
-    return axios.default.delete(
-      `http://127.0.0.1:8000/devices/${ip}`,{
-    ...options,}
+    return axios.default.post(
+      `http://127.0.0.1:8000/devices/usb`, postDevicesUsbBody, { ...options }
     );
   }
 
-
-
-export const getDeleteDevicesIpMutationOptions = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDevicesIp>>, TError,{ip: string}, TContext>, axios?: AxiosRequestConfig}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteDevicesIp>>, TError,{ip: string}, TContext> => {
-
-const mutationKey = ['deleteDevicesIp'];
+export const getPostDevicesUsbMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesUsb>>, TError,{data: AddUsbDeviceRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof postDevicesUsb>>, TError,{data: AddUsbDeviceRequest}, TContext> => {
+const mutationKey = ['postDevicesUsb'];
 const {mutation: mutationOptions, axios: axiosOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, axios: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDevicesIp>>, {ip: string}> = (props) => {
-          const {ip} = props ?? {};
-
-          return  deleteDevicesIp(ip,axiosOptions)
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDevicesUsb>>, {data: AddUsbDeviceRequest}> = (props) => {
+          const {data} = props ?? {};
+          return  postDevicesUsb(data,axiosOptions)
         }
-
-
-
-        
-
-
   return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteDevicesIpMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDevicesIp>>>
-    
-    export type DeleteDevicesIpMutationError = AxiosError<unknown>
-
-    export const useDeleteDevicesIp = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDevicesIp>>, TError,{ip: string}, TContext>, axios?: AxiosRequestConfig}
+    export type PostDevicesUsbMutationResult = NonNullable<Awaited<ReturnType<typeof postDevicesUsb>>>
+    export type PostDevicesUsbMutationBody = AddUsbDeviceRequest
+    export type PostDevicesUsbMutationError = AxiosError<unknown>
+    export const usePostDevicesUsb = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesUsb>>, TError,{data: AddUsbDeviceRequest}, TContext>, axios?: AxiosRequestConfig}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteDevicesIp>>,
+        Awaited<ReturnType<typeof postDevicesUsb>>,
         TError,
-        {ip: string},
+        {data: AddUsbDeviceRequest},
         TContext
       > => {
-      return useMutation(getDeleteDevicesIpMutationOptions(options), queryClient);
+      return useMutation(getPostDevicesUsbMutationOptions(options), queryClient);
     }
-    export const postDevicesIpKeyKeyName = (
-    ip: string,
+
+// POST /devices/server
+export const postDevicesServer = (
+    postDevicesServerBody: AddServerDeviceRequest, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<unknown>> => {
+    return axios.default.post(
+      `http://127.0.0.1:8000/devices/server`, postDevicesServerBody, { ...options }
+    );
+  }
+
+export const getPostDevicesServerMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesServer>>, TError,{data: AddServerDeviceRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof postDevicesServer>>, TError,{data: AddServerDeviceRequest}, TContext> => {
+const mutationKey = ['postDevicesServer'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDevicesServer>>, {data: AddServerDeviceRequest}> = (props) => {
+          const {data} = props ?? {};
+          return  postDevicesServer(data,axiosOptions)
+        }
+  return  { mutationFn, ...mutationOptions }}
+    export type PostDevicesServerMutationResult = NonNullable<Awaited<ReturnType<typeof postDevicesServer>>>
+    export type PostDevicesServerMutationBody = AddServerDeviceRequest
+    export type PostDevicesServerMutationError = AxiosError<unknown>
+    export const usePostDevicesServer = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesServer>>, TError,{data: AddServerDeviceRequest}, TContext>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postDevicesServer>>,
+        TError,
+        {data: AddServerDeviceRequest},
+        TContext
+      > => {
+      return useMutation(getPostDevicesServerMutationOptions(options), queryClient);
+    }
+
+// DELETE /devices/{device_id}
+export const deleteDevicesDeviceId = (
+    deviceId: string, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<unknown>> => {
+    return axios.default.delete(
+      `http://127.0.0.1:8000/devices/${deviceId}`, { ...options }
+    );
+  }
+
+export const getDeleteDevicesDeviceIdMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDevicesDeviceId>>, TError,{deviceId: string}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDevicesDeviceId>>, TError,{deviceId: string}, TContext> => {
+const mutationKey = ['deleteDevicesDeviceId'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDevicesDeviceId>>, {deviceId: string}> = (props) => {
+          const {deviceId} = props ?? {};
+          return  deleteDevicesDeviceId(deviceId,axiosOptions)
+        }
+  return  { mutationFn, ...mutationOptions }}
+    export type DeleteDevicesDeviceIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDevicesDeviceId>>>
+    export type DeleteDevicesDeviceIdMutationError = AxiosError<unknown>
+    export const useDeleteDevicesDeviceId = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDevicesDeviceId>>, TError,{deviceId: string}, TContext>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDevicesDeviceId>>,
+        TError,
+        {deviceId: string},
+        TContext
+      > => {
+      return useMutation(getDeleteDevicesDeviceIdMutationOptions(options), queryClient);
+    }
+
+// POST /devices/{device_id}/key/{key_name}
+export const postDevicesDeviceIdKeyKeyName = (
+    deviceId: string,
     keyName: string, options?: AxiosRequestConfig
  ): Promise<AxiosResponse<unknown>> => {
-    
-    
     return axios.default.post(
-      `http://127.0.0.1:8000/devices/${ip}/key/${keyName}`,undefined,{
-    ...options,}
+      `http://127.0.0.1:8000/devices/${deviceId}/key/${keyName}`, undefined, { ...options }
     );
   }
 
-
-
-export const getPostDevicesIpKeyKeyNameMutationOptions = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesIpKeyKeyName>>, TError,{ip: string;keyName: string}, TContext>, axios?: AxiosRequestConfig}
-): UseMutationOptions<Awaited<ReturnType<typeof postDevicesIpKeyKeyName>>, TError,{ip: string;keyName: string}, TContext> => {
-
-const mutationKey = ['postDevicesIpKeyKeyName'];
+export const getPostDevicesDeviceIdKeyKeyNameMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesDeviceIdKeyKeyName>>, TError,{deviceId: string;keyName: string}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof postDevicesDeviceIdKeyKeyName>>, TError,{deviceId: string;keyName: string}, TContext> => {
+const mutationKey = ['postDevicesDeviceIdKeyKeyName'];
 const {mutation: mutationOptions, axios: axiosOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, axios: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDevicesIpKeyKeyName>>, {ip: string;keyName: string}> = (props) => {
-          const {ip,keyName} = props ?? {};
-
-          return  postDevicesIpKeyKeyName(ip,keyName,axiosOptions)
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDevicesDeviceIdKeyKeyName>>, {deviceId: string;keyName: string}> = (props) => {
+          const {deviceId,keyName} = props ?? {};
+          return  postDevicesDeviceIdKeyKeyName(deviceId,keyName,axiosOptions)
         }
-
-
-
-        
-
-
   return  { mutationFn, ...mutationOptions }}
-
-    export type PostDevicesIpKeyKeyNameMutationResult = NonNullable<Awaited<ReturnType<typeof postDevicesIpKeyKeyName>>>
-    
-    export type PostDevicesIpKeyKeyNameMutationError = AxiosError<unknown>
-
-    export const usePostDevicesIpKeyKeyName = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesIpKeyKeyName>>, TError,{ip: string;keyName: string}, TContext>, axios?: AxiosRequestConfig}
+    export type PostDevicesDeviceIdKeyKeyNameMutationResult = NonNullable<Awaited<ReturnType<typeof postDevicesDeviceIdKeyKeyName>>>
+    export type PostDevicesDeviceIdKeyKeyNameMutationError = AxiosError<unknown>
+    export const usePostDevicesDeviceIdKeyKeyName = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesDeviceIdKeyKeyName>>, TError,{deviceId: string;keyName: string}, TContext>, axios?: AxiosRequestConfig}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postDevicesIpKeyKeyName>>,
+        Awaited<ReturnType<typeof postDevicesDeviceIdKeyKeyName>>,
         TError,
-        {ip: string;keyName: string},
+        {deviceId: string;keyName: string},
         TContext
       > => {
-      return useMutation(getPostDevicesIpKeyKeyNameMutationOptions(options), queryClient);
+      return useMutation(getPostDevicesDeviceIdKeyKeyNameMutationOptions(options), queryClient);
     }
-    export const postDevicesIpInputText = (
-    ip: string,
-    postDevicesIpInputTextBody: TextInputRequest, options?: AxiosRequestConfig
+
+// POST /devices/{device_id}/input/text
+export const postDevicesDeviceIdInputText = (
+    deviceId: string,
+    postDevicesDeviceIdInputTextBody: TextInputRequest, options?: AxiosRequestConfig
  ): Promise<AxiosResponse<unknown>> => {
-    
-    
     return axios.default.post(
-      `http://127.0.0.1:8000/devices/${ip}/input/text`,
-      postDevicesIpInputTextBody,{
-    ...options,}
+      `http://127.0.0.1:8000/devices/${deviceId}/input/text`, postDevicesDeviceIdInputTextBody, { ...options }
     );
   }
 
-
-
-export const getPostDevicesIpInputTextMutationOptions = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesIpInputText>>, TError,{ip: string;data: TextInputRequest}, TContext>, axios?: AxiosRequestConfig}
-): UseMutationOptions<Awaited<ReturnType<typeof postDevicesIpInputText>>, TError,{ip: string;data: TextInputRequest}, TContext> => {
-
-const mutationKey = ['postDevicesIpInputText'];
+export const getPostDevicesDeviceIdInputTextMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesDeviceIdInputText>>, TError,{deviceId: string;data: TextInputRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof postDevicesDeviceIdInputText>>, TError,{deviceId: string;data: TextInputRequest}, TContext> => {
+const mutationKey = ['postDevicesDeviceIdInputText'];
 const {mutation: mutationOptions, axios: axiosOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, axios: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDevicesIpInputText>>, {ip: string;data: TextInputRequest}> = (props) => {
-          const {ip,data} = props ?? {};
-
-          return  postDevicesIpInputText(ip,data,axiosOptions)
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDevicesDeviceIdInputText>>, {deviceId: string;data: TextInputRequest}> = (props) => {
+          const {deviceId,data} = props ?? {};
+          return  postDevicesDeviceIdInputText(deviceId,data,axiosOptions)
         }
-
-
-
-        
-
-
   return  { mutationFn, ...mutationOptions }}
-
-    export type PostDevicesIpInputTextMutationResult = NonNullable<Awaited<ReturnType<typeof postDevicesIpInputText>>>
-    export type PostDevicesIpInputTextMutationBody = TextInputRequest
-    export type PostDevicesIpInputTextMutationError = AxiosError<unknown>
-
-    export const usePostDevicesIpInputText = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesIpInputText>>, TError,{ip: string;data: TextInputRequest}, TContext>, axios?: AxiosRequestConfig}
+    export type PostDevicesDeviceIdInputTextMutationResult = NonNullable<Awaited<ReturnType<typeof postDevicesDeviceIdInputText>>>
+    export type PostDevicesDeviceIdInputTextMutationBody = TextInputRequest
+    export type PostDevicesDeviceIdInputTextMutationError = AxiosError<unknown>
+    export const usePostDevicesDeviceIdInputText = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevicesDeviceIdInputText>>, TError,{deviceId: string;data: TextInputRequest}, TContext>, axios?: AxiosRequestConfig}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postDevicesIpInputText>>,
+        Awaited<ReturnType<typeof postDevicesDeviceIdInputText>>,
         TError,
-        {ip: string;data: TextInputRequest},
+        {deviceId: string;data: TextInputRequest},
         TContext
       > => {
-      return useMutation(getPostDevicesIpInputTextMutationOptions(options), queryClient);
+      return useMutation(getPostDevicesDeviceIdInputTextMutationOptions(options), queryClient);
     }
-    
