@@ -1,30 +1,58 @@
-import { Button, Input, tokens } from '@fluentui/react-components';
-import { AddRegular, DeleteRegular, ArrowClockwiseRegular } from '@fluentui/react-icons';
+import { Button, Input, Tab, TabList, tokens } from '@fluentui/react-components';
+import {
+  AddRegular,
+  DeleteRegular,
+  ArrowClockwiseRegular,
+  SearchRegular,
+  PlugConnectedRegular,
+} from '@fluentui/react-icons';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
 import {
   useGetDevices,
+  useDiscoverDevices,
   usePostDevices,
-  useDeleteDevicesIp
+  usePostDevicesUsb,
+  usePostDevicesServer,
+  useDeleteDevicesDeviceId,
 } from '../api/default/default';
-import type { DeviceList } from '../api/model';
+import type { DeviceList, DeviceDiscovery, DiscoveredDeviceResponse } from '../api/model';
+
+type ConnectionType = 'tcp' | 'usb' | 'server';
 
 interface DeviceManagerProps {
-  onSelectDevice: (ip: string) => void;
+  onSelectDevice: (deviceId: string) => void;
 }
 
 export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelectDevice }) => {
+  const [connectionType, setConnectionType] = useState<ConnectionType>('tcp');
+
+  // TCP state
   const [ip, setIp] = useState('');
   const [port, setPort] = useState('5555');
+
+  // Server state
+  const [serial, setSerial] = useState('');
+  const [serverAddr, setServerAddr] = useState('');
 
   const {
     data: devicesResponse,
     isLoading,
     isError,
-    refetch
+    refetch,
   } = useGetDevices();
 
-  const addDeviceMutation = usePostDevices({
+  const {
+    data: discoveredResponse,
+    isLoading: isDiscovering,
+    refetch: refetchDiscovery,
+  } = useDiscoverDevices({
+    query: {
+      enabled: false, // Only fetch when manually triggered
+    },
+  });
+
+  const addTcpDeviceMutation = usePostDevices({
     mutation: {
       onSuccess: () => {
         setIp('');
@@ -34,7 +62,7 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
     },
   });
 
-  const removeDeviceMutation = useDeleteDevicesIp({
+  const addUsbDeviceMutation = usePostDevicesUsb({
     mutation: {
       onSuccess: () => {
         refetch();
@@ -42,108 +70,289 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
     },
   });
 
-  const handleAddDevice = (e: Event) => {
+  const addServerDeviceMutation = usePostDevicesServer({
+    mutation: {
+      onSuccess: () => {
+        setSerial('');
+        setServerAddr('');
+        refetch();
+      },
+    },
+  });
+
+  const removeDeviceMutation = useDeleteDevicesDeviceId({
+    mutation: {
+      onSuccess: () => {
+        refetch();
+      },
+    },
+  });
+
+  const handleAddTcpDevice = (e: Event) => {
     e.preventDefault();
     if (ip && port) {
-      addDeviceMutation.mutate({
+      addTcpDeviceMutation.mutate({
+        data: { ip, port: parseInt(port, 10) },
+      });
+    }
+  };
+
+  const handleAddUsbDevice = () => {
+    addUsbDeviceMutation.mutate({
+      data: {}, // Auto-detect
+    });
+  };
+
+  const handleAddServerDevice = (e: Event) => {
+    e.preventDefault();
+    if (serial) {
+      addServerDeviceMutation.mutate({
         data: {
-          ip,
-          port: parseInt(port, 10),
+          serial,
+          server_addr: serverAddr || undefined,
         },
       });
     }
   };
 
-  const handleRemoveDevice = (deviceIp: string, e: any) => {
+  const handleConnectDiscovered = (device: DiscoveredDeviceResponse) => {
+    // For discovered devices, we just select them directly
+    onSelectDevice(device.id);
+  };
+
+  const handleRemoveDevice = (deviceId: string, e: any) => {
     e.stopPropagation();
-    if (confirm(`Remove device ${deviceIp}?`)) {
-      removeDeviceMutation.mutate({ ip: deviceIp });
+    if (confirm(`Remove device ${deviceId}?`)) {
+      removeDeviceMutation.mutate({ deviceId });
     }
   };
 
   const devices = (devicesResponse?.data as unknown as DeviceList)?.devices || [];
+  const discovered = (discoveredResponse?.data as unknown as DeviceDiscovery)?.devices || [];
+
+  const isAnyMutationPending =
+    addTcpDeviceMutation.isPending ||
+    addUsbDeviceMutation.isPending ||
+    addServerDeviceMutation.isPending;
 
   return (
     <div
-      className="p-4 rounded-xl w-full max-w-md mx-auto shadow-xl border"
+      className="w-full"
       style={{
         backgroundColor: tokens.colorNeutralBackground2,
         color: tokens.colorNeutralForeground1,
-        borderColor: tokens.colorNeutralStroke1,
       }}
     >
-      <h2 className="text-xl font-bold mb-6 text-center text-blue-400 tracking-tight">Device Manager</h2>
-
-      <form
-        onSubmit={handleAddDevice}
-        className="mb-8 space-y-4 p-4 rounded-lg border"
-        style={{
-          backgroundColor: tokens.colorNeutralBackground1,
-          borderColor: tokens.colorNeutralStroke2,
-        }}
+      <h2
+        className="text-lg font-semibold mb-4 text-center"
+        style={{ color: tokens.colorBrandForeground1 }}
       >
-        <div>
-          <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: tokens.colorNeutralForeground2 }}>IP Address</label>
+        Devices
+      </h2>
+
+      {/* Connection Type Tabs */}
+      <TabList
+        selectedValue={connectionType}
+        onTabSelect={(_, data) => setConnectionType(data.value as ConnectionType)}
+        size="small"
+        className="mb-4"
+      >
+        <Tab value="tcp">TCP/IP</Tab>
+        <Tab value="usb">USB</Tab>
+        <Tab value="server">ADB Server</Tab>
+      </TabList>
+
+      {/* TCP Connection Form */}
+      {connectionType === 'tcp' && (
+        <form onSubmit={handleAddTcpDevice} className="mb-4 space-y-3">
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              value={ip}
+              onChange={(_e, data) => setIp(data.value)}
+              placeholder="IP Address"
+              className="flex-1 font-mono text-sm"
+              required
+            />
+            <Input
+              type="number"
+              value={port}
+              onChange={(_e, data) => setPort(data.value)}
+              placeholder="Port"
+              className="w-24 font-mono text-sm"
+              required
+            />
+          </div>
+          <Button
+            type="submit"
+            disabled={isAnyMutationPending}
+            appearance="primary"
+            className="w-full"
+            size="small"
+            icon={!isAnyMutationPending ? <AddRegular /> : undefined}
+          >
+            {addTcpDeviceMutation.isPending ? 'Connecting...' : 'Add TCP Device'}
+          </Button>
+        </form>
+      )}
+
+      {/* USB Connection */}
+      {connectionType === 'usb' && (
+        <div className="mb-4 space-y-3">
+          <Button
+            onClick={handleAddUsbDevice}
+            disabled={isAnyMutationPending}
+            appearance="primary"
+            className="w-full"
+            size="small"
+            icon={<PlugConnectedRegular />}
+          >
+            {addUsbDeviceMutation.isPending ? 'Connecting...' : 'Connect USB Device'}
+          </Button>
+          <p className="text-xs text-center" style={{ color: tokens.colorNeutralForeground2 }}>
+            Auto-detects connected USB devices
+          </p>
+        </div>
+      )}
+
+      {/* ADB Server Connection Form */}
+      {connectionType === 'server' && (
+        <form onSubmit={handleAddServerDevice} className="mb-4 space-y-3">
           <Input
             type="text"
-            value={ip}
-            onChange={(_e, data) => setIp(data.value)}
-            placeholder="192.168.1.10"
-            className="w-full p-3 rounded-lg outline-none min-h-[44px] transition-all font-mono text-sm"
+            value={serial}
+            onChange={(_e, data) => setSerial(data.value)}
+            placeholder="Device Serial (e.g., emulator-5554)"
+            className="font-mono text-sm"
             required
           />
-        </div>
-        <div>
-          <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: tokens.colorNeutralForeground2 }}>Port</label>
           <Input
-            type="number"
-            value={port}
-            onChange={(_e, data) => setPort(data.value)}
-            placeholder="5555"
-            className="w-full p-3 rounded-lg outline-none min-h-[44px] transition-all font-mono text-sm"
-            required
+            type="text"
+            value={serverAddr}
+            onChange={(_e, data) => setServerAddr(data.value)}
+            placeholder="Server Address (optional, default: 127.0.0.1:5037)"
+            className="font-mono text-sm"
           />
-        </div>
-        <Button
-          type="submit"
-          disabled={addDeviceMutation.isPending}
-          appearance="primary"
-          className="w-full min-h-[44px] mt-2"
-          icon={!addDeviceMutation.isPending ? <AddRegular /> : undefined}
+          <Button
+            type="submit"
+            disabled={isAnyMutationPending}
+            appearance="primary"
+            className="w-full"
+            size="small"
+            icon={!isAnyMutationPending ? <AddRegular /> : undefined}
+          >
+            {addServerDeviceMutation.isPending ? 'Connecting...' : 'Add Server Device'}
+          </Button>
+        </form>
+      )}
+
+      {/* Error Messages */}
+      {(addTcpDeviceMutation.isError ||
+        addUsbDeviceMutation.isError ||
+        addServerDeviceMutation.isError) && (
+        <p
+          className="text-xs text-center mb-3"
+          style={{ color: tokens.colorStatusDangerForeground1 }}
         >
-          {addDeviceMutation.isPending ? (
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              Adding...
-            </span>
-          ) : 'Add Device'}
-        </Button>
-        {addDeviceMutation.isError && (
-          <p className="text-red-400 text-xs text-center mt-2 bg-red-900/10 py-1 rounded">
-            Failed to add device. Check connection.
+          Failed to connect device
+        </p>
+      )}
+
+      {/* Device Discovery Section */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3
+            className="text-xs font-medium"
+            style={{ color: tokens.colorNeutralForeground2 }}
+          >
+            Discovered
+          </h3>
+          <Button
+            onClick={() => refetchDiscovery()}
+            disabled={isDiscovering}
+            appearance="subtle"
+            size="small"
+            icon={<SearchRegular />}
+          >
+            {isDiscovering ? 'Scanning...' : 'Scan'}
+          </Button>
+        </div>
+
+        {discovered.length > 0 && (
+          <div className="space-y-1 mb-3">
+            {discovered.map((device) => (
+              <div
+                key={device.id}
+                className="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:opacity-80"
+                style={{ backgroundColor: tokens.colorNeutralBackground1 }}
+                onClick={() => handleConnectDiscovered(device)}
+              >
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="text-xs font-mono truncate"
+                    style={{ color: tokens.colorBrandForeground1 }}
+                  >
+                    {device.identifier}
+                  </p>
+                  <p
+                    className="text-xs"
+                    style={{ color: tokens.colorNeutralForeground2 }}
+                  >
+                    {device.connection_type} • {device.state}
+                  </p>
+                </div>
+                <PlugConnectedRegular
+                  style={{ color: tokens.colorNeutralForeground2 }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {discovered.length === 0 && !isDiscovering && (
+          <p
+            className="text-xs text-center py-2"
+            style={{ color: tokens.colorNeutralForeground2 }}
+          >
+            Click Scan to discover devices
           </p>
         )}
-      </form>
+      </div>
 
-      <div className="space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider mb-2 px-1" style={{ color: tokens.colorNeutralForeground2 }}>Saved Devices</h3>
+      {/* Connected Devices List */}
+      <div>
+        <h3
+          className="text-xs font-medium mb-2 px-1"
+          style={{ color: tokens.colorNeutralForeground2 }}
+        >
+          Connected
+        </h3>
 
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-8 text-gray-500 space-y-2">
-             <div className="w-6 h-6 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
-             <span className="text-xs">Loading devices...</span>
+          <div className="flex items-center justify-center py-4 gap-2">
+            <div className="w-4 h-4 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+            <span className="text-xs">Loading...</span>
           </div>
         )}
 
         {isError && (
-          <div className="bg-red-900/20 border border-red-800/50 text-red-300 p-4 rounded-lg text-center">
-            <p className="mb-3 text-sm">Unable to load devices</p>
+          <div
+            className="p-3 text-center rounded-lg"
+            style={{ backgroundColor: tokens.colorStatusDangerBackground1 }}
+          >
+            <p
+              className="text-xs mb-2"
+              style={{ color: tokens.colorStatusDangerForeground1 }}
+            >
+              Connection failed
+            </p>
             <Button
               onClick={() => refetch()}
-              className="px-4 py-2 bg-red-800 hover:bg-red-700 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors"
+              appearance="subtle"
+              size="small"
               icon={<ArrowClockwiseRegular />}
             >
-              Retry Connection
+              Retry
             </Button>
           </div>
         )}
@@ -151,35 +360,40 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
         {!isLoading && !isError && (
           <div className="space-y-2">
             {devices.length === 0 ? (
-              <div className="text-center py-8 rounded-lg border border-dashed" style={{ backgroundColor: tokens.colorNeutralBackgroundAlpha, borderColor: tokens.colorNeutralStroke2 }}>
-                <p className="text-sm" style={{ color: tokens.colorNeutralForeground2 }}>No devices found.</p>
-                <p className="text-xs mt-1" style={{ color: tokens.colorNeutralForeground3 }}>Add a device above to get started.</p>
+              <div
+                className="text-center py-4 rounded-lg"
+                style={{ backgroundColor: tokens.colorNeutralBackground1 }}
+              >
+                <p
+                  className="text-xs"
+                  style={{ color: tokens.colorNeutralForeground2 }}
+                >
+                  No devices connected
+                </p>
               </div>
             ) : (
-              devices.map((deviceIp) => (
+              devices.map((deviceId) => (
                 <div
-                  key={deviceIp}
-                  className="group flex items-center justify-between p-3 rounded-lg transition-all border"
-                  style={{
-                    backgroundColor: tokens.colorNeutralBackground1,
-                    borderColor: tokens.colorNeutralStroke1,
-                  }}
+                  key={deviceId}
+                  className="group flex items-center justify-between p-2 rounded-lg"
+                  style={{ backgroundColor: tokens.colorNeutralBackground1 }}
                 >
                   <Button
-                    onClick={() => onSelectDevice(deviceIp)}
+                    onClick={() => onSelectDevice(deviceId)}
                     appearance="transparent"
-                    className="flex-1 text-left font-mono truncate mr-3 min-h-[44px] flex items-center outline-none group-hover:translate-x-1 transition-transform"
+                    className="flex-1 text-left font-mono truncate"
                     style={{ color: tokens.colorBrandForeground1 }}
                   >
-                    <span className="w-2 h-2 rounded-full bg-green-500 mr-3 shadow-[0_0_8px_rgba(34,197,94,0.4)]"></span>
-                    {deviceIp}
+                    <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                    {deviceId}
                   </Button>
                   <Button
-                    onClick={(e) => handleRemoveDevice(deviceIp, e)}
+                    onClick={(e) => handleRemoveDevice(deviceId, e)}
                     disabled={removeDeviceMutation.isPending}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg transition-colors outline-none focus:ring-1 focus:ring-red-500/50"
-                    style={{ color: tokens.colorNeutralForeground3 }}
-                    aria-label={`Remove ${deviceIp}`}
+                    appearance="transparent"
+                    size="small"
+                    style={{ color: tokens.colorNeutralForeground2 }}
+                    aria-label={`Remove ${deviceId}`}
                     icon={<DeleteRegular />}
                   />
                 </div>
