@@ -1,7 +1,7 @@
-use poem::{listener::TcpListener, Route, Server, endpoint::StaticFilesEndpoint};
+use atvmate::{global_device_manager::GlobalDeviceManager, web_service::ApiService};
+use poem::{Route, Server, endpoint::StaticFilesEndpoint, listener::TcpListener};
 use poem_openapi::OpenApiService;
 use std::sync::Arc;
-use atvmate::{global_device_manager::GlobalDeviceManager, web_service::ApiService};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -19,7 +19,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .nest("/api", api_service)
         .nest("/docs", ui)
         .at("/api-docs/openapi.json", spec)
-        .nest("/", StaticFilesEndpoint::new("frontend/dist").index_file("index.html"));
+        .nest(
+            "/",
+            StaticFilesEndpoint::new("frontend/dist").index_file("index.html"),
+        );
 
     println!("Server running at http://127.0.0.1:8000");
     println!("API documentation available at http://127.0.0.1:8000/docs");
