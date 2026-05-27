@@ -6,6 +6,10 @@
  */
 
 export * from './addDeviceRequest';
+export * from './addUsbDeviceRequest';
+export * from './addServerDeviceRequest';
 export * from './apiResponse';
 export * from './deviceList';
+
+export * from './deviceDiscovery';
 export * from './textInputRequest';
