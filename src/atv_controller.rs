@@ -1,12 +1,12 @@
-use adb_client::{tcp::ADBTcpDevice, ADBDeviceExt};
+use crate::device::ADBDevice;
 use std::error::Error;
 
 pub struct ATVController {
-    device: ADBTcpDevice,
+    device: ADBDevice,
 }
 
 impl ATVController {
-    pub fn new(device: ADBTcpDevice) -> Self {
+    pub fn new(device: ADBDevice) -> Self {
         Self { device }
     }
 
