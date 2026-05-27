@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'preact/hooks';
 import { DeviceManager } from './components/DeviceManager';
 import { DPad } from './components/DPad';
 import { MediaControls } from './components/MediaControls';
-import { usePostDevicesIpKeyKeyName } from './api/default/default';
+import { usePostDevicesDeviceIdKeyKeyName } from './api/default/default';
 import { type Theme, webLightTheme, webDarkTheme, Button, tokens } from '@fluentui/react-components';
 import { WeatherMoon24Regular, WeatherSunny24Regular, ArrowLeft24Regular, Home24Regular, Navigation24Regular, Desktop24Regular } from '@fluentui/react-icons';
 
@@ -14,12 +14,12 @@ interface AppProps {
 export function App({ theme, setTheme }: AppProps) {
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
 
-  const sendKeyMutation = usePostDevicesIpKeyKeyName();
+  const sendKeyMutation = usePostDevicesDeviceIdKeyKeyName();
 
   const sendKey = useCallback((keyName: string) => {
     if (!selectedDevice) return;
     sendKeyMutation.mutate({
-      ip: selectedDevice,
+      deviceId: selectedDevice,
       keyName
     });
   }, [selectedDevice, sendKeyMutation]);
@@ -57,97 +57,96 @@ export function App({ theme, setTheme }: AppProps) {
     setTheme(theme === webDarkTheme ? webLightTheme : webDarkTheme);
   }, [theme, setTheme]);
 
-  return (
+return (
     <div
-      className="h-screen w-screen font-sans selection:bg-blue-500/30 overflow-hidden touch-none flex flex-col m-0 p-0"
+      className="h-screen w-screen font-sans selection:bg-blue-500/30 overflow-hidden touch-none flex flex-col"
       style={{
         backgroundColor: tokens.colorNeutralBackground1,
         color: tokens.colorNeutralForeground1,
       }}
     >
-      <div className="absolute top-4 right-4 z-50">
+      <div className="absolute top-3 right-3 z-50">
         <Button
           appearance="subtle"
           icon={theme === webDarkTheme ? <WeatherSunny24Regular /> : <WeatherMoon24Regular />}
           onClick={toggleTheme}
           aria-label="Toggle theme"
+          size="small"
         />
       </div>
-      {theme === webDarkTheme && (
-        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-gray-900/0 to-black pointer-events-none" />
-      )}
-      
-      <main className="flex-1 flex flex-col items-center w-full relative z-10 gap-6 h-full overflow-y-auto">
-        <div className="w-full shrink-0 max-w-4xl mx-auto">
+
+      <main className="flex-1 flex flex-col items-center w-full relative z-10 h-full overflow-y-auto py-4">
+        <div className="w-full max-w-md mx-auto px-4 mb-4">
           <DeviceManager onSelectDevice={setSelectedDevice} />
         </div>
 
         {selectedDevice ? (
-          <div className="w-full flex-1 flex flex-col items-center justify-start gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            
+          <div className="w-full flex-1 flex flex-col items-center gap-4 animate-in fade-in duration-300">
             <div
-              className="flex items-center gap-2 text-xs font-mono px-3 py-1 rounded-full border"
+              className="flex items-center gap-2 text-xs font-mono px-3 py-1 rounded-full"
               style={{
                 backgroundColor: tokens.colorStatusSuccessBackground1,
                 color: tokens.colorStatusSuccessForeground1,
-                borderColor: tokens.colorStatusSuccessBorder1,
               }}
             >
-              <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: tokens.colorStatusSuccessForeground1 }} />
-              CONNECTED: {selectedDevice}
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: tokens.colorStatusSuccessForeground1 }} />
+              {selectedDevice}
             </div>
 
-            <div className="w-full flex flex-col items-center gap-6 md:gap-8">
-              <div className="flex flex-col items-center gap-2 flex-1">
+            <div className="w-full flex flex-col items-center gap-4 px-4">
+              <div className="flex flex-col items-center">
                 <DPad onDirection={handleDPadDirection} />
-                <span className="text-xs uppercase tracking-widest font-bold" style={{ color: tokens.colorNeutralForeground2 }}>Navigation</span>
               </div>
 
-              <div className="w-full max-w-sm md:max-w-lg mx-auto">
+              <div className="w-full max-w-sm">
                 <MediaControls onAction={handleMediaAction} />
               </div>
 
-              <div className="grid grid-cols-3 gap-3 md:gap-4 w-full max-w-sm md:max-w-lg mx-auto px-2">
+              <div className="grid grid-cols-3 gap-2 w-full max-w-sm">
                 <Button
-                  appearance="secondary"
+                  appearance="subtle"
                   icon={<ArrowLeft24Regular />}
                   onClick={() => sendKey('back')}
-                  className="flex flex-col items-center justify-center p-2 md:p-3 rounded-xl transition-all"
+                  className="flex flex-col items-center justify-center py-3 rounded-lg"
+                  size="small"
                 >
-                  <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider">Back</span>
+                  <span className="text-[10px] uppercase font-medium">Back</span>
                 </Button>
                 <Button
-                  appearance="secondary"
+                  appearance="subtle"
                   icon={<Home24Regular />}
                   onClick={() => sendKey('home')}
-                  className="flex flex-col items-center justify-center p-2 md:p-3 rounded-xl transition-all"
+                  className="flex flex-col items-center justify-center py-3 rounded-lg"
+                  size="small"
                 >
-                  <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider">Home</span>
+                  <span className="text-[10px] uppercase font-medium">Home</span>
                 </Button>
                 <Button
-                  appearance="secondary"
+                  appearance="subtle"
                   icon={<Navigation24Regular />}
                   onClick={() => sendKey('menu')}
-                  className="flex flex-col items-center justify-center p-2 md:p-3 rounded-xl transition-all"
+                  className="flex flex-col items-center justify-center py-3 rounded-lg"
+                  size="small"
                 >
-                  <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider">Menu</span>
+                  <span className="text-[10px] uppercase font-medium">Menu</span>
                 </Button>
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex flex-col items-center justify-center text-center p-4 md:p-8 opacity-50 animate-pulse">
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-4 opacity-60">
             <div
-              className="w-20 h-20 md:w-24 md:h-24 mb-4 rounded-full flex items-center justify-center"
+              className="w-16 h-16 mb-3 rounded-full flex items-center justify-center"
               style={{ backgroundColor: tokens.colorNeutralBackground3 }}
             >
-              <Desktop24Regular className="w-12 h-12 md:w-16 md:h-16" style={{ color: tokens.colorNeutralForeground3 }} />
+              <Desktop24Regular className="w-8 h-8" style={{ color: tokens.colorNeutralForeground3 }} />
             </div>
-            <h3 className="text-lg md:text-xl font-bold" style={{ color: tokens.colorNeutralForeground2 }}>No Device Selected</h3>
-            <p className="text-xs md:text-sm mt-2 max-w-[200px] md:max-w-[300px]" style={{ color: tokens.colorNeutralForeground3 }}>Select or add a device from the manager above to start controlling.</p>
+            <h3 className="text-base font-medium" style={{ color: tokens.colorNeutralForeground2 }}>No Device Selected</h3>
+            <p className="text-xs mt-1 max-w-[200px]" style={{ color: tokens.colorNeutralForeground3 }}>
+              Add a device above to start controlling
+            </p>
           </div>
         )}
-
       </main>
     </div>
   );

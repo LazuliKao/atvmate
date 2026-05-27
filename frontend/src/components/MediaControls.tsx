@@ -22,42 +22,46 @@ export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onActio
     onAction(action);
   }, [onAction]);
 
-  const buttonClass = "min-w-[64px] min-h-[64px] rounded-xl touch-none active:scale-95";
+  const buttonClass = "min-w-10 min-h-10 rounded-lg touch-none active:scale-95";
 
   return (
-    <div className="flex flex-col gap-3 md:gap-4 lg:gap-5 p-3 md:p-4 lg:p-5 bg-gray-900/80 rounded-3xl backdrop-blur-xl border border-gray-800 shadow-2xl touch-none select-none">
-      <div className="flex flex-row gap-2 md:gap-3 lg:gap-4 items-center justify-center">
+    <div className="flex flex-col gap-2 p-2 touch-none select-none">
+      <div className="flex flex-row gap-2 items-center justify-center">
         <Button
-          appearance="secondary"
-          icon={<PreviousRegular className="w-6 h-6" />}
+          appearance="subtle"
+          icon={<PreviousRegular style={{ fontSize: '20px' }} />}
           className={buttonClass}
+          size="small"
           onPointerDown={(e) => handleInteraction(e, 'previous')}
           onContextMenu={(e) => e.preventDefault()}
           title="previous"
           style={{ touchAction: 'none' }}
         />
         <Button
-          appearance="secondary"
-          icon={<StopRegular className="w-6 h-6" />}
+          appearance="subtle"
+          icon={<StopRegular style={{ fontSize: '20px' }} />}
           className={buttonClass}
+          size="small"
           onPointerDown={(e) => handleInteraction(e, 'stop')}
           onContextMenu={(e) => e.preventDefault()}
           title="stop"
           style={{ touchAction: 'none' }}
         />
-        <Button 
-          appearance="primary" 
-          icon={isPlaying ? <PauseRegular className="w-6 h-6" /> : <PlayRegular className="w-6 h-6" />}
-          className={`${buttonClass} shadow-blue-900/20`}
+        <Button
+          appearance="primary"
+          icon={isPlaying ? <PauseRegular style={{ fontSize: '20px' }} /> : <PlayRegular style={{ fontSize: '20px' }} />}
+          className={`${buttonClass} w-12 h-12`}
+          size="small"
           onPointerDown={(e) => handleInteraction(e, 'play_pause')}
           onContextMenu={(e) => e.preventDefault()}
           title={isPlaying ? "pause" : "play"}
           style={{ touchAction: 'none' }}
         />
         <Button
-          appearance="secondary"
-          icon={<NextRegular className="w-6 h-6" />}
+          appearance="subtle"
+          icon={<NextRegular style={{ fontSize: '20px' }} />}
           className={buttonClass}
+          size="small"
           onPointerDown={(e) => handleInteraction(e, 'next')}
           onContextMenu={(e) => e.preventDefault()}
           title="next"
@@ -65,20 +69,22 @@ export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onActio
         />
       </div>
 
-      <div className="flex flex-row gap-2 md:gap-3 lg:gap-4 items-center justify-center border-t border-gray-800 pt-2 md:pt-3 lg:pt-4">
+      <div className="flex flex-row gap-2 items-center justify-center pt-2">
         <Button
-          appearance="secondary"
-          icon={<Speaker1Regular className="w-6 h-6" />}
-          className={`${buttonClass} w-full h-12 md:h-14 lg:h-16 rounded-2xl bg-gray-800/80`}
+          appearance="subtle"
+          icon={<Speaker1Regular style={{ fontSize: '20px' }} />}
+          className={`${buttonClass} flex-1`}
+          size="small"
           onPointerDown={(e) => handleInteraction(e, 'volume_down')}
           onContextMenu={(e) => e.preventDefault()}
           title="volume down"
           style={{ touchAction: 'none' }}
         />
         <Button
-          appearance="secondary"
-          icon={<Speaker2Regular className="w-6 h-6" />}
-          className={`${buttonClass} w-full h-12 md:h-14 lg:h-16 rounded-2xl bg-gray-800/80`}
+          appearance="subtle"
+          icon={<Speaker2Regular style={{ fontSize: '20px' }} />}
+          className={`${buttonClass} flex-1`}
+          size="small"
           onPointerDown={(e) => handleInteraction(e, 'volume_up')}
           onContextMenu={(e) => e.preventDefault()}
           title="volume up"
