@@ -78,6 +78,7 @@ impl ATVController {
         self.send_keyevent(86)
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn next(&mut self) -> Result<(), Box<dyn Error>> {
         self.send_keyevent(87)
     }
