@@ -50,15 +50,39 @@ jobs:
       - run: cargo clippy --all-targets -- -D warnings
 
   build:
-    name: Build
-    runs-on: ubuntu-latest
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
     needs: [check, test, fmt, clippy]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            artifact: atvmate-linux-x86_64
+            binary: atvmate
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            artifact: atvmate-windows-x86_64
+            binary: atvmate.exe
+          - target: x86_64-apple-darwin
+            os: macos-13
+            artifact: atvmate-macos-x86_64
+            binary: atvmate
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            artifact: atvmate-macos-aarch64
+            binary: atvmate
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build --release
+        with:
+          key: ${{ matrix.target }}
+      - run: cargo build --release --target ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
-          name: atvmate-linux-x86_64
-          path: target/release/atvmate
+          name: ${{ matrix.artifact }}
+          path: target/${{ matrix.target }}/release/${{ matrix.binary }}
