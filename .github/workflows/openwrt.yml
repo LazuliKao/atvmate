@@ -1,0 +1,171 @@
+name: OpenWrt IPK Build
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm --dir frontend install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --dir frontend build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 1
+
+  build-openwrt-package:
+    name: Build IPK (${{ matrix.arch }})
+    runs-on: ubuntu-latest
+    needs: build-frontend
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64_generic
+            target: aarch64-unknown-linux-musl
+          - arch: arm_cortex-a7_neon-vfpv4
+            target: armv7-unknown-linux-musleabihf
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: openwrt-${{ matrix.target }}
+
+      - uses: taiki-e/install-action@cross
+
+      - name: Build atvmate
+        run: cross build --release --target ${{ matrix.target }} --no-default-features
+
+      - name: Create IPK package
+        id: ipk
+        run: |
+          # Extract version from Cargo.toml
+          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          PKG_NAME="atvmate"
+          ARCH="${{ matrix.arch }}"
+          IPK_FILE="${PKG_NAME}_${VERSION}-${ARCH}.ipk"
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "ipk_file=${IPK_FILE}" >> "$GITHUB_OUTPUT"
+
+          # Create package build directory
+          PKG_DIR="ipk-build"
+          mkdir -p "${PKG_DIR}/tmp/atvmate/CONTROL"
+          mkdir -p "${PKG_DIR}/tmp/atvmate/usr/bin"
+          mkdir -p "${PKG_DIR}/tmp/atvmate/usr/share/atvmate/frontend"
+          mkdir -p "${PKG_DIR}/tmp/atvmate/etc/init.d"
+          mkdir -p "${PKG_DIR}/tmp/atvmate/etc/config"
+
+          # Copy binary
+          cp "target/${{ matrix.target }}/release/atvmate" "${PKG_DIR}/tmp/atvmate/usr/bin/atvmate"
+          chmod 755 "${PKG_DIR}/tmp/atvmate/usr/bin/atvmate"
+
+          # Copy frontend dist
+          cp -r frontend/dist/* "${PKG_DIR}/tmp/atvmate/usr/share/atvmate/frontend/"
+
+          # Copy config and init script
+          cp openwrt/files/etc/init.d/atvmate "${PKG_DIR}/tmp/atvmate/etc/init.d/atvmate"
+          chmod 755 "${PKG_DIR}/tmp/atvmate/etc/init.d/atvmate"
+          cp openwrt/files/etc/config/atvmate "${PKG_DIR}/tmp/atvmate/etc/config/atvmate"
+
+          # Calculate installed size
+          INSTALLED_SIZE=$(du -sk "${PKG_DIR}/tmp/atvmate" | awk '{print $1}')
+
+          # Create CONTROL/control
+          {
+            echo "Package: ${PKG_NAME}"
+            echo "Version: ${VERSION}"
+            echo "Depends: libc"
+            echo "Source: package/atvmate"
+            echo "Section: utils"
+            echo "Priority: optional"
+            echo "Architecture: ${ARCH}"
+            echo "Installed-Size: ${INSTALLED_SIZE}"
+            echo "Description: ATV Mate - Android TV Remote Control web service"
+          } > "${PKG_DIR}/tmp/atvmate/CONTROL/control"
+
+          # Create CONTROL/conffiles
+          echo "/etc/config/atvmate" > "${PKG_DIR}/tmp/atvmate/CONTROL/conffiles"
+
+          # Build the IPK (which is an ar archive)
+          cd "${PKG_DIR}"
+
+          # 1. debian-binary
+          echo "2.0" > debian-binary
+
+          # 2. control.tar.gz
+          tar --numeric-owner --group=0 --owner=0 -czf control.tar.gz -C tmp/atvmate CONTROL/
+
+          # 3. data.tar.gz
+          tar --numeric-owner --group=0 --owner=0 -czf data.tar.gz -C tmp/atvmate --exclude='CONTROL' .
+
+          # 4. Assemble IPK
+          ar rcs "../${IPK_FILE}" debian-binary control.tar.gz data.tar.gz
+          cd ..
+
+          echo "Built ${IPK_FILE}"
+          ls -lh "${IPK_FILE}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openwrt-${{ matrix.arch }}
+          path: ${{ steps.ipk.outputs.ipk_file }}
+          retention-days: 1
+
+  release:
+    name: Create Release
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    needs: build-openwrt-package
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: openwrt-*
+          merge-multiple: true
+          path: ipks
+
+      - name: List IPK files
+        run: ls -lhR ipks/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ipks/*.ipk
+          generate_release_notes: true

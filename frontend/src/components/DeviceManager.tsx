@@ -8,15 +8,8 @@ import {
 } from '@fluentui/react-icons';
 import type { FunctionalComponent } from 'preact';
 import { useState } from 'preact/hooks';
-import {
-  useGetDevices,
-  useDiscoverDevices,
-  usePostDevices,
-  usePostDevicesUsb,
-  usePostDevicesServer,
-  useDeleteDevicesDeviceId,
-} from '../api/default/default';
-import type { DeviceList, DeviceDiscovery, DiscoveredDeviceResponse } from '../api/model';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api, type DiscoveredDevice } from '../api';
 
 type ConnectionType = 'tcp' | 'usb' | 'server';
 
@@ -25,6 +18,7 @@ interface DeviceManagerProps {
 }
 
 export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelectDevice }) => {
+  const queryClient = useQueryClient();
   const [connectionType, setConnectionType] = useState<ConnectionType>('tcp');
 
   // TCP state
@@ -35,105 +29,68 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
   const [serial, setSerial] = useState('');
   const [serverAddr, setServerAddr] = useState('');
 
+  const { data: devices = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ['devices'],
+    queryFn: api.listDevices,
+  });
   const {
-    data: devicesResponse,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetDevices();
-
-  const {
-    data: discoveredResponse,
-    isLoading: isDiscovering,
+    data: discovered = [],
+    isFetching: isDiscovering,
     refetch: refetchDiscovery,
-  } = useDiscoverDevices({
-    query: {
-      enabled: false, // Only fetch when manually triggered
-    },
+  } = useQuery({ queryKey: ['discoveredDevices'], queryFn: api.discoverDevices, enabled: false });
+  const refreshDevices = () => queryClient.invalidateQueries({ queryKey: ['devices'] });
+  const addTcpDeviceMutation = useMutation({
+    mutationFn: () => api.addDevice(ip, Number.parseInt(port, 10)),
+    onSuccess: () => { setIp(''); setPort('5555'); refreshDevices(); },
   });
-
-  const addTcpDeviceMutation = usePostDevices({
-    mutation: {
-      onSuccess: () => {
-        setIp('');
-        setPort('5555');
-        refetch();
-      },
-    },
+  const addUsbDeviceMutation = useMutation({ mutationFn: api.addUsbDevice, onSuccess: refreshDevices });
+  const addServerDeviceMutation = useMutation({
+    mutationFn: () => api.addServerDevice(serial, serverAddr),
+    onSuccess: () => { setSerial(''); setServerAddr(''); refreshDevices(); },
   });
-
-  const addUsbDeviceMutation = usePostDevicesUsb({
-    mutation: {
-      onSuccess: () => {
-        refetch();
-      },
+  const removeDeviceMutation = useMutation({ mutationFn: api.removeDevice, onSuccess: refreshDevices });
+  const connectDiscoveredMutation = useMutation({
+    mutationFn: (device: DiscoveredDevice) => {
+      if (device.connection_type === 'usb') return api.addUsbDevice();
+      return api.addServerDevice(device.identifier);
     },
-  });
-
-  const addServerDeviceMutation = usePostDevicesServer({
-    mutation: {
-      onSuccess: () => {
-        setSerial('');
-        setServerAddr('');
-        refetch();
-      },
-    },
-  });
-
-  const removeDeviceMutation = useDeleteDevicesDeviceId({
-    mutation: {
-      onSuccess: () => {
-        refetch();
-      },
-    },
+    onSuccess: (_response, device) => { refreshDevices(); onSelectDevice(device.id); },
   });
 
   const handleAddTcpDevice = (e: Event) => {
     e.preventDefault();
     if (ip && port) {
-      addTcpDeviceMutation.mutate({
-        data: { ip, port: parseInt(port, 10) },
-      });
+      addTcpDeviceMutation.mutate();
     }
   };
 
   const handleAddUsbDevice = () => {
-    addUsbDeviceMutation.mutate({
-      data: {}, // Auto-detect
-    });
+    addUsbDeviceMutation.mutate();
   };
 
   const handleAddServerDevice = (e: Event) => {
     e.preventDefault();
     if (serial) {
-      addServerDeviceMutation.mutate({
-        data: {
-          serial,
-          server_addr: serverAddr || undefined,
-        },
-      });
+      addServerDeviceMutation.mutate();
     }
   };
 
-  const handleConnectDiscovered = (device: DiscoveredDeviceResponse) => {
-    // For discovered devices, we just select them directly
-    onSelectDevice(device.id);
+  const handleConnectDiscovered = (device: DiscoveredDevice) => {
+    connectDiscoveredMutation.mutate(device);
   };
 
-  const handleRemoveDevice = (deviceId: string, e: any) => {
+  const handleRemoveDevice = (deviceId: string, e: Event) => {
     e.stopPropagation();
     if (confirm(`Remove device ${deviceId}?`)) {
-      removeDeviceMutation.mutate({ deviceId });
+      removeDeviceMutation.mutate(deviceId);
     }
   };
-
-  const devices = (devicesResponse?.data as unknown as DeviceList)?.devices || [];
-  const discovered = (discoveredResponse?.data as unknown as DeviceDiscovery)?.devices || [];
 
   const isAnyMutationPending =
     addTcpDeviceMutation.isPending ||
     addUsbDeviceMutation.isPending ||
-    addServerDeviceMutation.isPending;
+    addServerDeviceMutation.isPending ||
+    connectDiscoveredMutation.isPending;
 
   return (
     <div
@@ -153,7 +110,7 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
       {/* Connection Type Tabs */}
       <TabList
         selectedValue={connectionType}
-        onTabSelect={(_, data) => setConnectionType(data.value as ConnectionType)}
+        onTabSelect={(_event: Event, data: { value: unknown }) => setConnectionType(data.value as ConnectionType)}
         size="small"
         className="mb-4"
       >
@@ -388,7 +345,7 @@ export const DeviceManager: FunctionalComponent<DeviceManagerProps> = ({ onSelec
                     {deviceId}
                   </Button>
                   <Button
-                    onClick={(e) => handleRemoveDevice(deviceId, e)}
+                    onClick={(e: Event) => handleRemoveDevice(deviceId, e)}
                     disabled={removeDeviceMutation.isPending}
                     appearance="transparent"
                     size="small"

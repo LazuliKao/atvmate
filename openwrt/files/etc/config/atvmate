@@ -1,0 +1,5 @@
+config atvmate 'main'
+	option enabled '1'
+	option port '8000'
+	option listen '0.0.0.0'
+	option adb_server '127.0.0.1:5037'

@@ -1,8 +1,19 @@
 import { useState, useCallback, useEffect } from 'preact/hooks';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { DeviceManager } from './components/DeviceManager';
 import { DPad } from './components/DPad';
 import { MediaControls } from './components/MediaControls';
-import { usePostDevicesDeviceIdKeyKeyName } from './api/default/default';
+import { DeviceInfo } from './components/DeviceInfo';
+import { AppManager } from './components/AppManager';
+import { ScreenshotViewer } from './components/ScreenshotViewer';
+import { SystemOperations } from './components/SystemOperations';
+import { FileTransfer } from './components/FileTransfer';
+import { LogViewer } from './components/LogViewer';
+import { HistoryViewer } from './components/HistoryViewer';
+import { BatchOperations } from './components/BatchOperations';
+import { InputControls } from './components/InputControls';
+import { DeviceStatusPanel } from './components/DeviceStatusPanel';
+import { api } from './api';
 import { type Theme, webLightTheme, webDarkTheme, Button, tokens } from '@fluentui/react-components';
 import { WeatherMoon24Regular, WeatherSunny24Regular, ArrowLeft24Regular, Home24Regular, Navigation24Regular, Desktop24Regular } from '@fluentui/react-icons';
 
@@ -14,7 +25,10 @@ interface AppProps {
 export function App({ theme, setTheme }: AppProps) {
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
 
-  const sendKeyMutation = usePostDevicesDeviceIdKeyKeyName();
+  const { data: devices = [] } = useQuery({ queryKey: ['devices'], queryFn: api.listDevices });
+  const sendKeyMutation = useMutation({
+    mutationFn: ({ deviceId, keyName }: { deviceId: string; keyName: string }) => api.sendKey(deviceId, keyName),
+  });
 
   const sendKey = useCallback((keyName: string) => {
     if (!selectedDevice) return;
@@ -130,6 +144,20 @@ return (
                 >
                   <span className="text-[10px] uppercase font-medium">Menu</span>
                 </Button>
+              </div>
+
+              {/* Feature Components */}
+              <div className="w-full max-w-sm flex flex-col gap-4">
+                <DeviceInfo deviceId={selectedDevice} />
+                <DeviceStatusPanel deviceId={selectedDevice} />
+                <InputControls deviceId={selectedDevice} />
+                <SystemOperations deviceId={selectedDevice} />
+                <AppManager deviceId={selectedDevice} />
+                <ScreenshotViewer deviceId={selectedDevice} />
+                <FileTransfer deviceId={selectedDevice} />
+                <LogViewer deviceId={selectedDevice} />
+                <HistoryViewer deviceId={selectedDevice} />
+                <BatchOperations deviceId={selectedDevice} devices={devices} />
               </div>
             </div>
           </div>

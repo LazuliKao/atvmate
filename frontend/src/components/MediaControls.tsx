@@ -17,7 +17,7 @@ interface MediaControlsProps {
 }
 
 export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onAction, isPlaying = false }) => {
-  const handleInteraction = useCallback((e: any, action: 'play_pause' | 'stop' | 'next' | 'previous' | 'volume_up' | 'volume_down') => {
+  const handleInteraction = useCallback((e: Event, action: 'play_pause' | 'stop' | 'next' | 'previous' | 'volume_up' | 'volume_down') => {
     e.preventDefault();
     onAction(action);
   }, [onAction]);
@@ -32,8 +32,8 @@ export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onActio
           icon={<PreviousRegular style={{ fontSize: '20px' }} />}
           className={buttonClass}
           size="small"
-          onPointerDown={(e) => handleInteraction(e, 'previous')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'previous')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           title="previous"
           style={{ touchAction: 'none' }}
         />
@@ -42,8 +42,8 @@ export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onActio
           icon={<StopRegular style={{ fontSize: '20px' }} />}
           className={buttonClass}
           size="small"
-          onPointerDown={(e) => handleInteraction(e, 'stop')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'stop')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           title="stop"
           style={{ touchAction: 'none' }}
         />
@@ -52,8 +52,8 @@ export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onActio
           icon={isPlaying ? <PauseRegular style={{ fontSize: '20px' }} /> : <PlayRegular style={{ fontSize: '20px' }} />}
           className={`${buttonClass} w-12 h-12`}
           size="small"
-          onPointerDown={(e) => handleInteraction(e, 'play_pause')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'play_pause')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           title={isPlaying ? "pause" : "play"}
           style={{ touchAction: 'none' }}
         />
@@ -62,8 +62,8 @@ export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onActio
           icon={<NextRegular style={{ fontSize: '20px' }} />}
           className={buttonClass}
           size="small"
-          onPointerDown={(e) => handleInteraction(e, 'next')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'next')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           title="next"
           style={{ touchAction: 'none' }}
         />
@@ -75,8 +75,8 @@ export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onActio
           icon={<Speaker1Regular style={{ fontSize: '20px' }} />}
           className={`${buttonClass} flex-1`}
           size="small"
-          onPointerDown={(e) => handleInteraction(e, 'volume_down')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'volume_down')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           title="volume down"
           style={{ touchAction: 'none' }}
         />
@@ -85,8 +85,8 @@ export const MediaControls: FunctionalComponent<MediaControlsProps> = ({ onActio
           icon={<Speaker2Regular style={{ fontSize: '20px' }} />}
           className={`${buttonClass} flex-1`}
           size="small"
-          onPointerDown={(e) => handleInteraction(e, 'volume_up')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'volume_up')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           title="volume up"
           style={{ touchAction: 'none' }}
         />

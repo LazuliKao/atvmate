@@ -14,7 +14,7 @@ interface DPadProps {
 }
 
 export const DPad: FunctionalComponent<DPadProps> = ({ onDirection }) => {
-  const handleInteraction = useCallback((e: any, direction: 'up' | 'down' | 'left' | 'right' | 'center') => {
+  const handleInteraction = useCallback((e: Event, direction: 'up' | 'down' | 'left' | 'right' | 'center') => {
     if (e && e.preventDefault) {
       e.preventDefault();
     }
@@ -30,8 +30,8 @@ export const DPad: FunctionalComponent<DPadProps> = ({ onDirection }) => {
           icon={<ArrowUpRegular style={{ fontSize: '24px' }} />}
           className={`${baseClass} w-12 h-12 md:w-14 md:h-14 rounded-t-lg`}
           appearance="subtle"
-          onPointerDown={(e) => handleInteraction(e, 'up')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'up')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           style={{ touchAction: 'none' }}
         />
       </div>
@@ -41,8 +41,8 @@ export const DPad: FunctionalComponent<DPadProps> = ({ onDirection }) => {
           icon={<ArrowLeftRegular style={{ fontSize: '24px' }} />}
           className={`${baseClass} w-12 h-12 md:w-14 md:h-14 rounded-l-lg`}
           appearance="subtle"
-          onPointerDown={(e) => handleInteraction(e, 'left')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'left')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           style={{ touchAction: 'none' }}
         />
       </div>
@@ -51,8 +51,8 @@ export const DPad: FunctionalComponent<DPadProps> = ({ onDirection }) => {
           icon={<CircleRegular style={{ fontSize: '24px' }} />}
           className={`${baseClass} w-12 h-12 md:w-14 md:h-14 rounded-full`}
           appearance="subtle"
-          onPointerDown={(e) => handleInteraction(e, 'center')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'center')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           style={{ touchAction: 'none' }}
         />
       </div>
@@ -61,8 +61,8 @@ export const DPad: FunctionalComponent<DPadProps> = ({ onDirection }) => {
           icon={<ArrowRightRegular style={{ fontSize: '24px' }} />}
           className={`${baseClass} w-12 h-12 md:w-14 md:h-14 rounded-r-lg`}
           appearance="subtle"
-          onPointerDown={(e) => handleInteraction(e, 'right')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'right')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           style={{ touchAction: 'none' }}
         />
       </div>
@@ -72,8 +72,8 @@ export const DPad: FunctionalComponent<DPadProps> = ({ onDirection }) => {
           icon={<ArrowDownRegular style={{ fontSize: '24px' }} />}
           className={`${baseClass} w-12 h-12 md:w-14 md:h-14 rounded-b-lg`}
           appearance="subtle"
-          onPointerDown={(e) => handleInteraction(e, 'down')}
-          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={(e: Event) => handleInteraction(e, 'down')}
+          onContextMenu={(e: Event) => e.preventDefault()}
           style={{ touchAction: 'none' }}
         />
       </div>

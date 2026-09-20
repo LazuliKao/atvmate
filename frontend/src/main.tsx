@@ -13,7 +13,7 @@ function Main() {
   return (
     <FluentProvider theme={theme}>
       <QueryClientProvider client={queryClient}>
-        {<App theme={theme} setTheme={setTheme} /> as any}
+        <App theme={theme} setTheme={setTheme} />
       </QueryClientProvider>
     </FluentProvider>
   )
