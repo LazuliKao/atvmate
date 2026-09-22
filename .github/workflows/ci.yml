@@ -90,7 +90,7 @@ jobs:
             binary: atvmate.exe
             cargo_args: ""
           - target: x86_64-apple-darwin
-            os: macos-13
+            os: macos-15-intel
             artifact: atvmate-macos-x86_64
             binary: atvmate
             cargo_args: ""
