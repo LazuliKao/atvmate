@@ -78,22 +78,27 @@ jobs:
             os: ubuntu-latest
             artifact: atvmate-linux-x86_64
             binary: atvmate
+            cargo_args: ""
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
             artifact: atvmate-linux-x86_64-musl
             binary: atvmate
+            cargo_args: --no-default-features
           - target: x86_64-pc-windows-msvc
             os: windows-latest
             artifact: atvmate-windows-x86_64
             binary: atvmate.exe
+            cargo_args: ""
           - target: x86_64-apple-darwin
             os: macos-13
             artifact: atvmate-macos-x86_64
             binary: atvmate
+            cargo_args: ""
           - target: aarch64-apple-darwin
             os: macos-latest
             artifact: atvmate-macos-aarch64
             binary: atvmate
+            cargo_args: ""
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -105,7 +110,7 @@ jobs:
       - name: Install musl-tools
         if: contains(matrix.target, 'musl')
         run: sudo apt-get update && sudo apt-get install -y musl-tools
-      - run: cargo build --release --target ${{ matrix.target }}
+      - run: cargo build --release --target ${{ matrix.target }} ${{ matrix.cargo_args }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
